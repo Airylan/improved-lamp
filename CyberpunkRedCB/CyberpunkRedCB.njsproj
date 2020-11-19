@@ -37,6 +37,9 @@
     </Content>
     <Content Include="app.jsx" />
     <Content Include="BaseStatsPanel.jsx" />
+    <Content Include="character.jsx">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="CharacterStats.jsx" />
     <Content Include="DerivedStatsPanel.jsx" />
     <Content Include="dist\app-bundle.js" />

@@ -1,24 +1,15 @@
-﻿import React, { useState, useMemo } from 'react';
-import { AccordionDetails, AccordionSummary, Typography, Grid, Paper, Divider, Accordion, Box } from '@material-ui/core';
+﻿import React, { useState } from 'react';
+import { AccordionDetails, AccordionSummary, Typography, Grid, Paper, Accordion, Box } from '@material-ui/core';
 import { NumericValue } from './NumericValue';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-
-function getSkillPoints(list) {
-    return list.reduce((current, next) => current + (((next?.double ?? "") === "") ? 1 : 2) * (next.value - ((next.granted)? next.granted : 0)), 0);
-}
-
-function getGrantedSkillPoints(list) {
-    return list.reduce((current, next) => current + ((next.granted) ? next.granted : 0), 0);
-}
-
-function SkillListPanel(props) {
-}
+import { useSkills, useCharacter } from './character';
 
 function SkillGroupPanel(props) {
-    const { group, items, skillGroupExpansion, handleExpansionChange, updateSkill } = { ...props };
-    const skillPoints = useMemo(() => getSkillPoints(items), [items]);
-    const grantedSkillPoints = useMemo(() => getGrantedSkillPoints(items), [items]);
-    const basedOnValue = (basedOn) => useMemo(() => props.character.stats.find(x => x.name === basedOn).value, [basedOn, props.character.stats]);
+    const [, { getStat, setSkill, getSkillPoints, getGrantedSkillPoints }] = useCharacter();
+    const { group, items, skillGroupExpansion, handleExpansionChange } = { ...props };
+    const skillPoints = getSkillPoints(items);
+    const grantedSkillPoints = getGrantedSkillPoints(items);
+    const basedOnValue = (basedOn) => getStat(basedOn).value;
     return (
         <Accordion
             expanded={skillGroupExpansion === group}
@@ -40,7 +31,7 @@ function SkillGroupPanel(props) {
                         max={6}
                         basedOnLabel={skill.basedOn}
                         basedOn={basedOnValue(skill.basedOn)}
-                        onChange={(e) => updateSkill(skill.name, e.target.value)}
+                        onChange={(e) => setSkill(skill.name, e.target.value)}
                         bold={skill.basic}
                     /></Grid>
                     )}
@@ -50,14 +41,10 @@ function SkillGroupPanel(props) {
     );
 }
 
-function SkillGroupsPanel(props) {
+function SkillGroupsPanel() {
+    const [skills] = useSkills();
 
-    function updateSkill(name, value) {
-        const toUpdate = props.character.skills.map(x => (x.name === name) ? { ...x, "value": +value } : x);
-        props.onUpdate(toUpdate);
-    }
-
-    const skillGroups = props.character.skills.reduce((groups, item) => ({
+    const skillGroups = skills.reduce((groups, item) => ({
         ...groups,
         [item.category]: [...(groups[item.category] || []), item]
     }), {});
@@ -68,14 +55,20 @@ function SkillGroupsPanel(props) {
     };
 
     return Object.entries(skillGroups).map(([group, items]) =>
-        <SkillGroupPanel character={props.character} group={group} items={items} skillGroupExpansion={skillGroupExpansion} handleExpansionChange={handleExpansionChange} updateSkill={updateSkill} />
+        <SkillGroupPanel
+            group={group}
+            items={items}
+            skillGroupExpansion={skillGroupExpansion}
+            handleExpansionChange={handleExpansionChange}
+        />
     );
 
 }
 
 export function SkillsPanel(props) {
+    const [, { getSkillPoints }] = useSkills();
 
-    const skillPoints = useMemo(() => getSkillPoints(props.character.skills));
+    const skillPoints = getSkillPoints();
 
     return (<Box maxWidth="50%">
         <Grid container>

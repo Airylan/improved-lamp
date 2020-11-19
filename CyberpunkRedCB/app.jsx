@@ -11,6 +11,8 @@ import { getCharacterSkeleton } from './getCharacterSkeleton';
 import { TextField, Button, Tabs, Tab, AppBar, Grid } from '@material-ui/core';
 import GoogleLoginButton from './GoogleLoginButton';
 
+import { useDetails, useCharacterValues } from './character';
+
 function BasicInformation(props) {
     // TODO: Expand this, but at least we have names.
     return <TextField label="Name" value={props.details.name} onChange={(e) => props.onUpdate({ ...props.details, "name": e.target.value })} />
@@ -63,9 +65,11 @@ function getDetailsSkeleton() {
 
 function App(props) {
     const [activeTab, setActiveTab] = useState(0);
-    const [character, setCharacter] = useState(() => { return getCharacterSkeleton() });
+    //const [character, setCharacter] = useState(() => { return getCharacterSkeleton() });
+    const [character, { setCharacter }] = useCharacterValues();
     const [lifepath, setLifepath] = useState(() => { return loadLifePath() });
-    const [details, setDetails] = useState(() => { return getDetailsSkeleton() });
+    //const [details, setDetails] = useState(() => { return getDetailsSkeleton() });
+    const [details, { setDetails }] = useDetails();
 
     useEffect(() => { document.title = "Cyberpunk RED Charcter " + (details?.name ?? "") }, [details?.name]);
 
