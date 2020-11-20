@@ -157,6 +157,22 @@ const lifepathActions = {
         const roller = new LifepathRoller;
 
         return roller.handleRoll(stageDefinition);
+    },
+    rollAll: () => (stateActions) => {
+        const { handleRoll, currentStage, setLifepathStageValue, nextStage, resetLifepath } = lifepathActions;
+        // 1. reset lifepath to start fresh.
+        resetLifepath()(stateActions);
+
+        // 2. while we're not at __final__,
+        let current = currentStage()(stateActions);
+        while (current !== "__final__") {
+            // 3. set the current stage value
+            setLifepathStageValue(current, handleRoll(current)(stateActions))(stateActions);
+            // 4. go to the next stage
+            nextStage(current)(stateActions);
+            // 5. pull the new current stage
+            current = currentStage()(stateActions);
+        }
     }
 };
 

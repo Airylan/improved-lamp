@@ -1,19 +1,11 @@
 import React from 'react';
 import Button from '@material-ui/core/Button';
 import { LifepathStage } from './LifepathStage';
-import { LifepathRoller } from './LifepathRoller';
-import { saveAs } from 'file-saver';
 import Stepper from '@material-ui/core/Stepper';
 import { useLifepath } from './character';
 
 export function Lifepath(props) {
-    const [lifepath, { setLifepath, resetLifepath, hasResult }] = useLifepath();
-
-    const rollAll = () => {
-        const roller = new LifepathRoller;
-        while (!lifepathIsDone()) {
-        }
-    };
+    const [lifepath, { resetLifepath, hasResult, rollAll }] = useLifepath();
 
     const stages = lifepath.stages.map(
         (stage, index) =>
