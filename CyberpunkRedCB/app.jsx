@@ -3,7 +3,7 @@ var ReactDOM = require('react-dom');
 import stages from './lifepathStages.json';
 import { saveAs } from 'file-saver';
 
-import Lifepath from './lifepath.jsx';
+import { Lifepath } from './lifepath.jsx';
 import { TabPanel } from './TabPanel';
 import { CharacterStats } from './CharacterStats';
 import { getCharacterSkeleton } from './getCharacterSkeleton';
