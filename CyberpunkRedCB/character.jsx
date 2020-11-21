@@ -76,9 +76,9 @@ const lifepathActions = {
             lifepath: loadLifePath()
         });
     },
-    setLifepathStageValue: (stage, value) => ({ getState, setState }) => {
+    setLifepathStageValue: (stage, value) => ({ getState, setState, dispatch }) => {
         const state = getState();
-        const stageDefinition = lifepathActions.getStageDefinition(stage)({ getState });
+        const stageDefinition = dispatch(lifepathActions.getStageDefinition(stage));
         const oldRoleStages = state.lifepath.roleStages;
         let oldRoleResults = {};
         for (const stage in oldRoleStages) {
@@ -109,13 +109,14 @@ const lifepathActions = {
         const state = getState();
         return state.lifepath.currentStage;
     },
-    currentStageDefinition: () => ({ getState }) => {
+    currentStageDefinition: () => ({ getState, dispatch }) => {
         const state = getState();
         const currentStage = state.lifepath.currentStage;
-        return lifepathActions.getStageDefinition(currentStage)({ getState });
+        return dispatch(lifepathActions.getStageDefinition(currentStage));
     },
-    nextStage: (stage) => ({ getState, setState }) => {
-        const currentStageDefinition = lifepathActions.getStageDefinition(stage)({ getState }) || lifepathActions.currentStageDefinition()({ getState });
+    nextStage: (stage) => ({ getState, setState, dispatch }) => {
+        const currentStageDefinition = dispatch(lifepathActions.getStageDefinition(stage)) ||
+            dispatch(lifepathActions.currentStageDefinition());
         const state = getState();
         const currentStage = currentStageDefinition.title;
         const then = currentStageDefinition?.["then"]?.[state.lifepath.results?.[currentStage]];
@@ -133,8 +134,9 @@ const lifepathActions = {
             lifepath: { ...state.lifepath, currentStage: nextStage }
         });
     },
-    previousStage: (stage) => ({ getState, setState }) => {
-        const currentStageDefinition = lifepathActions.getStageDefinition(stage)({ getState }) || lifepathActions.currentStageDefinition()({ getState });
+    previousStage: (stage) => ({ getState, setState, dispatch }) => {
+        const currentStageDefinition = dispatch(lifepathActions.getStageDefinition(stage)) ||
+            dispatch(lifepathActions.currentStageDefinition());
         const state = getState();
         const currentStage = currentStageDefinition.title;
         const generalIndex = state.lifepath.stages.findIndex(x => x.title === currentStage);
@@ -151,27 +153,29 @@ const lifepathActions = {
         });
         // TODO: "then" on previous entries. Check for if there's a Result?
     },
-    handleRoll: (stage) => ({ getState }) => {
-        const stageDefinition = (stage) ? lifepathActions.getStageDefinition(stage)({ getState }) : lifepathActions.currentStageDefinition()({ getState });
+    handleRoll: (stage) => ({ dispatch }) => {
+        const stageDefinition = (stage)
+            ? dispatch(lifepathActions.getStageDefinition(stage))
+            : dispatch(lifepathActions.currentStageDefinition());
 
         const roller = new LifepathRoller;
 
         return roller.handleRoll(stageDefinition);
     },
-    rollAll: () => (stateActions) => {
+    rollAll: () => ({ dispatch }) => {
         const { handleRoll, currentStage, setLifepathStageValue, nextStage, resetLifepath } = lifepathActions;
         // 1. reset lifepath to start fresh.
-        resetLifepath()(stateActions);
+        dispatch(resetLifepath());
 
         // 2. while we're not at __final__,
-        let current = currentStage()(stateActions);
+        let current = dispatch(currentStage());
         while (current !== "__final__") {
             // 3. set the current stage value
-            setLifepathStageValue(current, handleRoll(current)(stateActions))(stateActions);
+            dispatch(setLifepathStageValue(current, dispatch(handleRoll(current))));
             // 4. go to the next stage
-            nextStage(current)(stateActions);
+            dispatch(nextStage(current));
             // 5. pull the new current stage
-            current = currentStage()(stateActions);
+            current = dispatch(currentStage());
         }
     }
 };
